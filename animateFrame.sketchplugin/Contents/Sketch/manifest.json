@@ -1,0 +1,23 @@
+{
+  "name" : "AnimateFrames",
+  "author" : "Rafał Gawlik",
+  "description" : "Preview frames animation in browser.",
+  "authorEmail" : "gawlikraf@gmail.com",
+  "version" : "1.0",
+  "commands" : [
+    {
+      "script" : "script.cocoascript",
+      "handler" : "onRun",
+      "shortcut" : "cmd alt a",
+      "name" : "animate frames",
+      "identifier" : "animateFrames"
+    }
+  ],
+  "menu" : {
+    "items" : [
+      "animateFrames"
+    ],
+    "title" : "Animate Frames"
+  },
+  "identifier" : "com.mxaly.animate-frame"
+}

@@ -1,0 +1,73 @@
+var getCss = function(frameWidth, time, rootPath, artboard) {
+  var temp_frame = [artboard frame];
+  var width = temp_frame.width() - parseInt(frameWidth);
+  var height = temp_frame.height();
+  var steps = (temp_frame.width() / parseInt(frameWidth))-1;
+  return NSString.stringWithString_("\
+    .animated-item {\
+      width: "+frameWidth+"px;\
+      height: "+height+"px;\
+      position: absolute;\
+      left: 50%;\
+      top: 50%;\
+      transform: translate(-50%, -50%);\
+      background: url(" + rootPath + 'frames.png' +") no-repeat;\
+      background-position: 0 0;\
+      cursor: pointer;\
+      animation: frame-animation "+time+"s steps("+steps+");\
+    }\
+    .animated-item:hover {\
+      background-position: -"+width+"px 0;\
+      transition: background "+time+"s steps("+steps+");\
+    }\
+    @keyframes frame-animation {\
+      0% {\
+        background-position: 0 0;\
+      }\
+      100% {\
+        background-position: -"+width+"px 0;\
+      }\
+    }\
+  ");
+}
+
+var onRun = function(context) {
+  var doc = context.document;
+  var artboard = [[doc currentPage] currentArtboard] || [doc currentPage];
+
+  if ([artboard class] == "MSPage") {
+    doc.showMessage("Hey! Need artboard here.");
+  } else {
+    var frameWidth = doc.askForUserInput_initialValue("Frame width:", "100");
+
+    var temp_frame = [artboard frame];
+    var validArtboardWidth = (temp_frame.width() % parseInt(frameWidth)) == 0;
+    if(validArtboardWidth){
+      var time = doc.askForUserInput_initialValue("Animation time:", "1");
+      var artboardName = [artboard name].replace(/(\W|\s)+/, '')
+      var rootPath = NSTemporaryDirectory() + artboardName + '/';
+
+      [doc saveArtboardOrSlice:artboard toFile: rootPath + 'frames.png'];
+
+      var cssContet = getCss(frameWidth, time, rootPath, artboard);
+      var someContent = NSString.stringWithString_("\
+      <html>\
+        <head>\
+          <link rel='stylesheet' href='" + rootPath + "style.css'" + ">\
+          <meta charset='UTF-8'>\
+        </head>\
+        <body style='text-align: center;    margin: 0; padding: 0; background: #" + [[artboard backgroundColor] hexValue] + ";'> \
+          <div class='animated-item'></div> \
+        </body>\
+      </html>");
+
+      someContent.dataUsingEncoding_(NSUTF8StringEncoding).writeToFile_atomically_(rootPath + artboardName + ".html", true);
+      cssContet.dataUsingEncoding_(NSUTF8StringEncoding).writeToFile_atomically_(rootPath + "style.css", true);
+
+      var file = [NSURL fileURLWithPath: rootPath + artboardName +".html"];
+      [[NSWorkspace sharedWorkspace] openFile:[file path]];
+    } else {
+      doc.showMessage("Artboard width must be multiplicity of given frame width. For eg: 10 x 100px = 1000px for.");
+    }
+  }
+};
